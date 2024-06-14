@@ -2,60 +2,65 @@ package states;
 
 class MainMenuState extends GameState {
     var camFollow:flixel.FlxObject;
+    var firstOpened:Bool = true;
 
     override function create() {
-		FlxG.sound.playMusic(Paths.music('titlescreen'), 0.7, true); //This music is not original I just took it from Paper Mario
-		
+        GameState.skipTrans = false;
+
         var bg = new flixel.addons.display.FlxBackdrop(Paths.image('cheese'), XY);
         bg.velocity.set(100, 100);
         add(bg);
-		
-		var gradient = new flixel.FlxSprite().loadGraphic(Paths.image('title_gradient'));
-        gradient.scrollFactor.set();
-		gradient.setGraphicSize(flixel.FlxG.width, flixel.FlxG.height);
-		gradient.updateHitbox();
-		gradient.screenCenter();
-        add(gradient);
-		
-		var logo = new flixel.FlxSprite(200, 164).loadGraphic(Paths.image('logo'));
-        logo.scale.set(0.6, 0.6);
-		logo.scrollFactor.set(0.2, 0.2);
+
+		var logo = new FlxSprite(30, 30).loadGraphic(Paths.image('logo'));
+		logo.scale.set(0.6, 0.6);
+        logo.antialiasing = Preferences.prefs.antialiasing;
+        logo.updateHitbox();
+		logo.scrollFactor.set(0.3, 0.3);
 		logo.angle = -3;
-        add(logo);
-		
-		var haxejamthing = new flixel.FlxSprite(-140, -180).loadGraphic(Paths.image('haxejam'));
-		haxejamthing.scale.set(0.3, 0.3);
-		haxejamthing.scrollFactor.set();
-		add(haxejamthing);
-		
-		flixel.tweens.FlxTween.tween(logo, {y: logo.y - 200}, flixel.FlxG.random.float(1, 3), {ease: flixel.tweens.FlxEase.sineInOut, type: 4});
-		flixel.tweens.FlxTween.tween(logo, {angle: 3}, flixel.FlxG.random.float(1, 2), {ease: flixel.tweens.FlxEase.sineInOut, type: 4});
-		
-		var dataTxt = new flixel.text.FlxText(0, FlxG.height - 14, 0, "", 10);
-		dataTxt.font = Paths.font("LeagueSpartan-Bold.otf");
-		dataTxt.borderSize = 1;
-		dataTxt.applyMarkup("Made by <TBar>T<TBar>-<Ghost>Ghost<Ghost> / <haxe>2024 Summer Haxe Gamejam<haxe>", [
+		add(logo);
+
+		var haxeJam = new FlxSprite(40, FlxG.height - 240).loadGraphic(Paths.image('haxejam'));
+		haxeJam.scale.set(0.3, 0.3);
+		haxeJam.antialiasing = Preferences.prefs.antialiasing;
+		haxeJam.updateHitbox();
+		haxeJam.scrollFactor.set(0.3, 0.3);
+		add(haxeJam);
+
+		var infoTxt = new UIText({x: 30, y: FlxG.height - 30}, 0, "", 13);
+		infoTxt.applyMarkup("Made by <TBar>T<TBar>-<Ghost>Ghost<Ghost> / <haxe>2024 Summer Haxe Gamejam<haxe>", [
 			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFFEBB53D, false, false, 0xFFDA6A3D), "<haxe>"),
 			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFF00487C, false, false, 0xFF002B49), "<TBar>"),
 			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFF09BF91, false, false, 0xFF068966), "<Ghost>"),
 		]);
-		dataTxt.scrollFactor.set();
-        add(dataTxt);
-		
+		add(infoTxt);
+
+		var infoTxt = new UIText({x: 30, y: FlxG.height - 46}, 0, "Spelligans v0.1.0", 13);
+        add(infoTxt);
+
         camFollow = new flixel.FlxObject();
         add(camFollow);
-
         FlxG.camera.follow(camFollow, LOCKON, 0.5);
 
         super.create();
     }
 
     override function update(elapsed:Float) {
+        if (FlxG.sound.music == null) {
+			FlxG.sound.playMusic(Paths.music('titlescreen'), 0.7); // This music is not original I just took it from Paper Mario -Tbar
+
+			if (firstOpened) FlxG.sound.music.fadeIn(1);
+            firstOpened = false;
+        }
+
         camFollow.screenCenter();
         camFollow.x += ((FlxG.mouse.x - (FlxG.width/2)) / 16);
 		camFollow.y += ((FlxG.mouse.y - (FlxG.height/2)) / 16);
-		
-		if(flixel.FlxG.keys.justPressed.TAB) switchState();
+
+		if (FlxG.keys.justPressed.R) switchState(new states.PlayState());
+		if (FlxG.keys.justPressed.S) openSubState(new substates.Prompt('are you gay', YESNO, null, [
+            "YES" => () -> trace('you answered yes'),
+            "NO" => () -> trace('lmao..')
+        ]));
 
         super.update(elapsed);
     }

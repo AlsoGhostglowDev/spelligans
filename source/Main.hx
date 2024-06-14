@@ -8,6 +8,7 @@ class Main extends Sprite
 	public function new()
 	{
 		super();
+		GameState.skipTrans = true;
 		addChild(new FlxGame(0, 0, states.MainMenuState));
 	}
 }

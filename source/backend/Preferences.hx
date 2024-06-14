@@ -4,6 +4,10 @@ package backend;
     public var antialiasing:Bool = true; 
     public var flashingLights:Bool = true;
     public var framerate:Int = 60;
+
+    public var keyBinds:Map<String, Array<flixel.input.keyboard.FlxKey>> = [
+        "exit" => [ESCAPE, BACKSPACE]
+    ];
 }
 
 class Preferences {
