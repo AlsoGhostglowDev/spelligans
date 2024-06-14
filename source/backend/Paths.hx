@@ -19,4 +19,9 @@ class Paths
 	{
 		return 'assets/music/$key' + musicSuffix;
 	}
+	
+	static public function sound(key:String)
+	{
+		return 'assets/sounds/$key' + musicSuffix;
+	}
 }

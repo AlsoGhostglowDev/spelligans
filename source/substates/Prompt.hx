@@ -19,6 +19,7 @@ class Prompt extends GameSubState
 	public var answerData:Any;
 	public var callback:(answer:Any) -> Void;
 	public var optionTexts:flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup<FlxText>;
+	public var mute:Bool = false;
 
     var canProceed:Bool = false;
 
@@ -41,7 +42,9 @@ class Prompt extends GameSubState
 		prompt.y -= 180;
 		prompt.antialiasing = Preferences.prefs.antialiasing;
 		add(prompt);
-
+		
+		if(!mute) FlxG.sound.play(Paths.sound('menu/substate_notif_jingle'));
+		
 		switch (promptType)
 		{
 			case YESNO:
@@ -118,6 +121,7 @@ class Prompt extends GameSubState
 		{
 			callback(answer);
 		}
+		if(!mute) FlxG.sound.play(Paths.sound('menu/substate_notif_jingle_end'));
 		close();
 	}
 }

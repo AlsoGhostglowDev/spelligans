@@ -27,6 +27,12 @@ class MainMenuState extends GameState {
 		logo.scrollFactor.set(0.3, 0.3);
 		logo.angle = -3;
 		add(logo);
+		
+		var startTile = new objects.LetterTile(0, 0, 'A');
+		add(startTile);
+		
+		var quitTile = new objects.LetterTile(0, startTile.y + startTile.width, 'B');
+		add(quitTile);
 
 		var haxeJam = new FlxSprite(40, FlxG.height - 240).loadGraphic(Paths.image('haxejam'));
 		haxeJam.scale.set(0.3, 0.3);
@@ -74,6 +80,11 @@ class MainMenuState extends GameState {
             if (answer == 'YES') trace('gay');
             else trace('lmao.. ok');
         }));
+		
+		if (FlxG.keys.justPressed.A) {
+            FlxG.sound.music.fadeOut(1, 0, (_) -> FlxG.sound.music = null);
+            switchState(new states.PlayState());
+        }
 
 		if (FlxG.keys.justPressed.K)
 			openSubState(new substates.Prompt('Setting keybind for "Walk"', KEYBIND, null, (answer) ->
