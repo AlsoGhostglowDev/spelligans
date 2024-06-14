@@ -11,6 +11,13 @@ class MainMenuState extends GameState {
         bg.velocity.set(100, 100);
         add(bg);
 
+        var grad = flixel.util.FlxGradient.createGradientFlxSprite(1, Std.int(FlxG.height / 3), [0x0, 0xFFFFB93F]);
+        grad.setPosition(0, (FlxG.width/3) + 50);
+        grad.scrollFactor.set();
+        grad.scale.set(FlxG.width, 1);
+        grad.updateHitbox();
+        add(grad);
+
 		var logo = new FlxSprite(30, 30).loadGraphic(Paths.image('logo'));
 		logo.scale.set(0.6, 0.6);
         logo.antialiasing = Preferences.prefs.antialiasing;
