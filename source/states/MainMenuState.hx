@@ -1,5 +1,7 @@
 package states;
 
+import flixel.input.keyboard.FlxKey;
+
 class MainMenuState extends GameState {
     var camFollow:flixel.FlxObject;
     var firstOpened:Bool = true;
@@ -34,7 +36,7 @@ class MainMenuState extends GameState {
 		add(haxeJam);
 
 		var infoTxt = new UIText({x: 30, y: FlxG.height - 30}, 0, "", 13);
-		infoTxt.applyMarkup("Made by <TBar>T<TBar>-<Ghost>Ghost<Ghost> / <haxe>2024 Summer Haxe Gamejam<haxe>", [
+		infoTxt.applyMarkup("Made by <TBar>T-<TBar><Ghost>Ghost<Ghost> / <haxe>2024 Summer Haxe Gamejam<haxe>", [
 			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFFEBB53D, false, false, 0xFFDA6A3D), "<haxe>"),
 			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFF00487C, false, false, 0xFF002B49), "<TBar>"),
 			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFF09BF91, false, false, 0xFF068966), "<Ghost>"),
@@ -52,10 +54,10 @@ class MainMenuState extends GameState {
     }
 
     override function update(elapsed:Float) {
-        if (FlxG.sound.music == null) {
-			FlxG.sound.playMusic(Paths.music('titlescreen'), 0.7); // This music is not original I just took it from Paper Mario -Tbar
+        if (FlxG.sound.music == null && !transitioning) {
+			FlxG.sound.playMusic(Paths.music('titlescreen'), 0); // This music is not original I just took it from Paper Mario -Tbar
 
-			if (firstOpened) FlxG.sound.music.fadeIn(1);
+			if (firstOpened) FlxG.sound.music.fadeIn(1, 0, 0.7);
             firstOpened = false;
         }
 
@@ -63,11 +65,29 @@ class MainMenuState extends GameState {
         camFollow.x += ((FlxG.mouse.x - (FlxG.width/2)) / 16);
 		camFollow.y += ((FlxG.mouse.y - (FlxG.height/2)) / 16);
 
-		if (FlxG.keys.justPressed.R) switchState(new states.PlayState());
-		if (FlxG.keys.justPressed.S) openSubState(new substates.Prompt('are you gay', YESNO, null, [
-            "YES" => () -> trace('you answered yes'),
-            "NO" => () -> trace('lmao..')
-        ]));
+        if (FlxG.keys.justPressed.R) {
+            FlxG.sound.music.fadeOut(1, 0, (_) -> FlxG.sound.music = null);
+            switchState(new states.PlayState());
+        }
+
+		if (FlxG.keys.justPressed.S) openSubState(new substates.Prompt('are you gay', YESNO, null, (answer) -> {
+            if (answer == 'YES') trace('gay');
+            else trace('lmao.. ok');
+        }));
+
+		if (FlxG.keys.justPressed.K)
+			openSubState(new substates.Prompt('Setting keybind for "Walk"', KEYBIND, null, (answer) ->
+			{
+				trace('set keybind to: ${cast(answer, FlxKey).toString()}');
+			})
+        );
+
+		if (FlxG.keys.justPressed.O)
+		openSubState(new substates.Prompt('How would you like your sandwich?', OPTIONS, ["options" => ['6-inch', 'footlong', 'burger!!']], (answer) ->
+		    {
+		    	trace('ghost wants his sandwich $answer');
+		    })
+        );
 
         super.update(elapsed);
     }
@@ -78,8 +98,6 @@ private class MenuItem extends flixel.group.FlxSpriteGroup {
     public var itemTxt:FlxText;
 
     override public function new(x:Float, y:Float, itemText:String) {
-        
-
         super(x, y);
     }
 }

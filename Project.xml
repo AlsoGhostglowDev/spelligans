@@ -17,8 +17,8 @@
 
 	<!--These window settings apply to all targets-->
 	<window width="980" height="551" fps="60" background="#000000" hardware="true" vsync="false" />
-	
-	<define name="SHOW_CRASHDUMP" /> <!--Remove in final build-->
+
+	<define name="SHOW_CRASHDUMP" /> <!--Remove in final build-->	
 
 	<!--HTML5-specific-->
 	<window if="html5" resizable="false" />

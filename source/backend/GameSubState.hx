@@ -20,9 +20,7 @@ class GameSubState extends flixel.FlxSubState {
     }
 
     override public function update(elapsed:Float) {
-        if (FlxG.keys.anyPressed(Preferences.prefs.keyBinds.get('exit'))) {
-            close();
-        }
+        if (FlxG.keys.anyPressed(Preferences.prefs.keyBinds.get('exit'))) close();
 
         super.update(elapsed);
         updatePost(elapsed);
@@ -34,7 +32,6 @@ class GameSubState extends flixel.FlxSubState {
         FlxG.cameras.remove(substateCam);
 		_parentState.persistentUpdate = false;
 
-		if (FlxG.sound.music != null)
-			FlxG.sound.music.fadeIn(0.6, FlxG.sound.music.volume, FlxG.sound.music.volume+0.5);
+		if (FlxG.sound.music != null) FlxG.sound.music.fadeIn(0.6, FlxG.sound.music.volume, FlxG.sound.music.volume+0.5);
     }
 }

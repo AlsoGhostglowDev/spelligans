@@ -6,6 +6,7 @@ import flixel.FlxCamera;
 class GameState extends flixel.addons.ui.FlxUIState {
     public var transitionCam:flixel.FlxCamera;
 	public var canSwitchState:Bool = true;
+    public var transitioning:Bool = true;
     public static var skipTrans:Bool = false; 
 
     override function create() {
@@ -23,7 +24,7 @@ class GameState extends flixel.addons.ui.FlxUIState {
 				if (camera == transitionCam) continue;
 		        FlxTween.tween(camera, {zoom: 1}, 1, {ease: FlxEase.expoOut});
             }
-			var transition = new Transition(false, () -> canSwitchState = true);
+			var transition = new Transition(false, () -> {canSwitchState = true ; transitioning = false;});
 			transition.camera = transitionCam;
 			add(transition);
         }
@@ -43,6 +44,7 @@ class GameState extends flixel.addons.ui.FlxUIState {
     public function switchState(state:GameState) {
         if (canSwitchState) {
             if (!skipTrans) {
+				transitioning = true;
 		    	canSwitchState = false;
 
                 for (camera in FlxG.cameras.list) {
