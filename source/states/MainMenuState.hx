@@ -23,7 +23,7 @@ class MainMenuState extends GameState {
 		logo.angle = -3;
         add(logo);
 		
-		var haxejamthing = new flixel.FlxSprite(-140, -180).loadGraphic(Paths.image('haxejam'));
+		var haxejamthing = new flixel.FlxSprite(-110, -180).loadGraphic(Paths.image('haxejam'));
 		haxejamthing.scale.set(0.3, 0.3);
 		haxejamthing.scrollFactor.set();
 		add(haxejamthing);
@@ -32,8 +32,8 @@ class MainMenuState extends GameState {
 		flixel.tweens.FlxTween.tween(logo, {angle: 3}, flixel.FlxG.random.float(1, 2), {ease: flixel.tweens.FlxEase.sineInOut, type: 4});
 		
 		var dataTxt = new flixel.text.FlxText(0, FlxG.height - 14, 0, "", 10);
-		dataTxt.font = Paths.font("LeagueSpartan-Bold.otf");
-		dataTxt.borderSize = 1;
+		dataTxt.setFormat(Paths.font('LeagueSpartan-Bold.otf'), 10, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
+		//var dataTxt = new objects.UIText({x: 0, y: FlxG.height - 14}, 0, "", 10);
 		dataTxt.applyMarkup("Made by <TBar>T<TBar>-<Ghost>Ghost<Ghost> / <haxe>2024 Summer Haxe Gamejam<haxe>", [
 			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFFEBB53D, false, false, 0xFFDA6A3D), "<haxe>"),
 			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFF00487C, false, false, 0xFF002B49), "<TBar>"),

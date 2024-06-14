@@ -22,7 +22,7 @@ class Main extends Sprite
 		addChild(new FlxGame(0, 0, states.MainMenuState));
 		
 		#if SHOW_CRASHDUMP
-		openfl.Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
+		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
 		#end
 		
 	}
