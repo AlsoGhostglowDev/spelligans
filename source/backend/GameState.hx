@@ -28,14 +28,18 @@ class GameState extends flixel.addons.ui.FlxUIState {
 			transition.camera = transitionCam;
 			add(transition);
         }
+
+        subStateClosed.add((_) -> {
+			if (FlxG.sound.music != null) FlxG.sound.music.fadeOut(0.6, FlxG.sound.music.volume + 0.5); 
+            persistentUpdate = false;
+        });
     }
 
     override public function openSubState(substate:flixel.FlxSubState) {
-        if (subState != null) return;
         super.openSubState(substate);
 
         if (FlxG.sound.music != null) {
-			FlxG.sound.music.fadeIn(0.6, FlxG.sound.music.volume, FlxG.sound.music.volume-0.5);
+			FlxG.sound.music.fadeIn(0.6, FlxG.sound.music.volume, FlxG.sound.music.volume - 0.5);
         }
 
 		persistentUpdate = true;

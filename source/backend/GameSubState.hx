@@ -3,6 +3,7 @@ package backend;
 class GameSubState extends flixel.FlxSubState {
     public var substateCam:flixel.FlxCamera;
     public var overlayBg:FlxSprite;
+	public static var mute:Bool = false;
 
     public static var instance:GameSubState;
 
@@ -17,6 +18,8 @@ class GameSubState extends flixel.FlxSubState {
         overlayBg.alpha = 0;
         add(overlayBg);
         FlxTween.tween(overlayBg, {alpha: 0.6}, 1, {ease: FlxEase.expoOut});
+
+		if (!mute) FlxG.sound.play(Paths.sound('menu/substate_notif_jingle'));
     }
 
     override public function update(elapsed:Float) {
@@ -32,6 +35,7 @@ class GameSubState extends flixel.FlxSubState {
         FlxG.cameras.remove(substateCam);
 		_parentState.persistentUpdate = false;
 
+		if (!mute) FlxG.sound.play(Paths.sound('menu/substate_notif_jingle_end'));
 		if (FlxG.sound.music != null) FlxG.sound.music.fadeIn(0.6, FlxG.sound.music.volume, FlxG.sound.music.volume+0.5);
     }
 }

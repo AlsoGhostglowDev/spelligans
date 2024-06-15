@@ -6,7 +6,7 @@ package backend;
     public var framerate:Int = 60;
 
     public var keyBinds:Map<String, Array<flixel.input.keyboard.FlxKey>> = [
-        "exit" => [ESCAPE, BACKSPACE]
+        "exit" => [ESCAPE, ESCAPE]
     ];
 }
 

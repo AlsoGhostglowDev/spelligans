@@ -4,29 +4,28 @@ enum PromptType
 {
 	YESNO;
 	INPUT;
-    OK;
+	OK;
 	OPTIONS;
 	KEYBIND;
 }
 
 class Prompt extends GameSubState
 {
-	public var prompt:FlxText;
-	public var promptAnswer:FlxText;
+	public var prompt:UIText;
+	public var promptAnswer:UIText;
 
 	public var promptType:PromptType;
 	public var extraData:Map<String, Dynamic> = new Map<String, Dynamic>();
-	public var answerData:Any;
-	public var callback:(answer:Any) -> Void;
+	public var answerData:Dynamic;
+	public var callback:(answer:Dynamic) -> Void;
 	public var optionTexts:flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup<FlxText>;
-	public var mute:Bool = false;
 
     var canProceed:Bool = false;
 
-	public function new(text:String, ?promptType:PromptType = YESNO, ?extraData:Map<String, Dynamic>, ?callback:(answer:Any) -> Void)
+	public function new(text:String, ?promptType:PromptType = YESNO, ?extraData:Map<String, Dynamic>, ?callback:(answer:Dynamic) -> Void)
 	{
 		super();
-		prompt = new FlxText(0, 0, 0, text);
+		prompt = new UIText({x: 0, y: 0}, 0, text, 34);
 		optionTexts = new flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup<FlxText>();
 		add(optionTexts);
 
@@ -37,23 +36,24 @@ class Prompt extends GameSubState
 
 	override function create()
 	{
-		prompt.setFormat(Paths.font(Paths.fonts.ui), 34);
 		prompt.screenCenter();
 		prompt.y -= 180;
-		prompt.antialiasing = Preferences.prefs.antialiasing;
 		add(prompt);
-		
-		if(!mute) FlxG.sound.play(Paths.sound('menu/substate_notif_jingle'));
-		
+
+		var pressEnter = new UIText({x: 0, y: 0}, 0, 'Press ENTER to confirm.', 20);
+		pressEnter.screenCenter();
+		pressEnter.y -= 145;
+		add(pressEnter);
+
 		switch (promptType)
 		{
 			case YESNO:
 				answerData = 'YES';
 				createOptTexts(['YES', 'NO']);
 			case INPUT:
-				'';
+				answerData = '';
 			case KEYBIND:
-				'[Press Key to Bind]';
+				answerData = '[Press Key to Bind]';
 			case OPTIONS:
 				answerData = extraData.get('options')[0];
 				createOptTexts(extraData.get('options'));
@@ -61,9 +61,8 @@ class Prompt extends GameSubState
                 answerData = 'OK';
 		}
 
-		promptAnswer = new FlxText(0, 0, FlxG.width * 0.8, answerData);
-		promptAnswer.setFormat(Paths.font(Paths.fonts.ui), 24);
-		promptAnswer.screenCenter();
+		promptAnswer = new UIText({x: 0, y: 0}, 0, answerData, 24);
+
 		if (promptType != YESNO && promptType != OPTIONS)
 			add(promptAnswer);
 
@@ -72,10 +71,10 @@ class Prompt extends GameSubState
 
 	override function update(elapsed:Float)
 	{
-		if (FlxG.keys.justPressed.ENTER)
-			proceed(answerData);
-
 		super.update(elapsed);
+
+		if (FlxG.keys.justPressed.ENTER && answerData != null)
+			proceed(answerData);
 
 		for (text in optionTexts)
 		{
@@ -93,19 +92,35 @@ class Prompt extends GameSubState
         if (promptType == KEYBIND) {
 			var key = FlxG.keys.firstPressed();
             if (key != -1 && canProceed) {
-                proceed(key);
+                answerData = key;
+				promptAnswer.text = '[${cast(answerData, flixel.input.keyboard.FlxKey).toString()}]';
             }
         }
+
+		if (promptType == INPUT) {
+			var key = cast(FlxG.keys.firstJustPressed(), flixel.input.keyboard.FlxKey);
+			if (key != NONE && canProceed) {
+				if (key != BACKSPACE)
+					answerData += InputFormatter.getKeyName(key, true);
+				else
+					answerData = answerData.substr(0, answerData.length-1);
+
+				promptAnswer.text = answerData;
+			}
+		}
+
+		promptAnswer.screenCenter();
 	}
 
 	public function createOptTexts(texts:Array<String>)
 	{
-		var i = -1;
+		var i = 0;
 		for (string in texts)
 		{
 			i++;
-			var x = (FlxG.width / texts.length + 1) * i;
-			var text = new FlxText(x, 0, 0, string);
+			var text = new FlxText(0, 0, 0, string);
+			text.x = (((FlxG.width / (texts.length - 1)) * (i)) / 2) - (text.width / 2);
+
 			text.antialiasing = Preferences.prefs.antialiasing;
 			text.screenCenter(Y);
 			text.setFormat(Paths.font(Paths.fonts.ui), 24);
@@ -115,13 +130,12 @@ class Prompt extends GameSubState
 		}
 	}
 
-	public function proceed(answer:Any)
+	public function proceed(answer:Dynamic)
 	{
 		if (callback != null)
 		{
 			callback(answer);
 		}
-		if(!mute) FlxG.sound.play(Paths.sound('menu/substate_notif_jingle_end'));
 		close();
 	}
 }

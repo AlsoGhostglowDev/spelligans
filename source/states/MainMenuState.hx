@@ -27,12 +27,6 @@ class MainMenuState extends GameState {
 		logo.scrollFactor.set(0.3, 0.3);
 		logo.angle = -3;
 		add(logo);
-		
-		var startTile = new objects.LetterTile(0, 0, 'A');
-		add(startTile);
-		
-		var quitTile = new objects.LetterTile(0, startTile.y + startTile.width, 'B');
-		add(quitTile);
 
 		var haxeJam = new FlxSprite(40, FlxG.height - 240).loadGraphic(Paths.image('haxejam'));
 		haxeJam.scale.set(0.3, 0.3);
@@ -71,34 +65,36 @@ class MainMenuState extends GameState {
         camFollow.x += ((FlxG.mouse.x - (FlxG.width/2)) / 16);
 		camFollow.y += ((FlxG.mouse.y - (FlxG.height/2)) / 16);
 
-        if (FlxG.keys.justPressed.R) {
-            FlxG.sound.music.fadeOut(1, 0, (_) -> FlxG.sound.music = null);
-            switchState(new states.PlayState());
+        if (subState == null) {
+			if (FlxG.keys.justPressed.R) {
+				FlxG.sound.music.fadeOut(1, 0, (_) -> FlxG.sound.music = null);
+				switchState(new states.PlayState());
+			}
+
+		    if (FlxG.keys.justPressed.ZERO) openSubState(new substates.Prompt('do you like ghost', YESNO, null, (answer) -> {
+                if (answer == 'YES') trace('gay');
+                else trace('no you do lmao lmaol maoasls');
+            }));
+
+		    if (FlxG.keys.justPressed.ONE)
+		    	openSubState(new substates.Prompt('setting keybind for "jerk off"', KEYBIND, null, (answer) ->
+		    	{
+		    		trace('set keybind to: ${cast (answer, FlxKey).toString()}');
+		    	})
+            );
+
+		    if (FlxG.keys.justPressed.TWO)
+				openSubState(new substates.Prompt('how do you want ghost to react', OPTIONS, ["options" => ('horny shocked pent-up').split(' ')], (answer) ->
+		        {
+		        	trace('ghost wants his sandwich $answer');
+		        })
+            );
+
+			if (FlxG.keys.justPressed.THREE)
+			openSubState(new substates.Prompt('what do you think of ghost', INPUT, null, (answer) -> {
+				trace(answer);
+			}));
         }
-
-		if (FlxG.keys.justPressed.S) openSubState(new substates.Prompt('are you gay', YESNO, null, (answer) -> {
-            if (answer == 'YES') trace('gay');
-            else trace('lmao.. ok');
-        }));
-		
-		if (FlxG.keys.justPressed.A) {
-            FlxG.sound.music.fadeOut(1, 0, (_) -> FlxG.sound.music = null);
-            switchState(new states.PlayState());
-        }
-
-		if (FlxG.keys.justPressed.K)
-			openSubState(new substates.Prompt('Setting keybind for "Walk"', KEYBIND, null, (answer) ->
-			{
-				trace('set keybind to: ${cast(answer, FlxKey).toString()}');
-			})
-        );
-
-		if (FlxG.keys.justPressed.O)
-		openSubState(new substates.Prompt('How would you like your sandwich?', OPTIONS, ["options" => ['6-inch', 'footlong', 'burger!!']], (answer) ->
-		    {
-		    	trace('ghost wants his sandwich $answer');
-		    })
-        );
 
         super.update(elapsed);
     }

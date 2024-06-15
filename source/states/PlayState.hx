@@ -5,6 +5,8 @@ import flixel.FlxState;
 class PlayState extends GameState
 {
 	var tiles:LetterList;
+	var textBox:Textbox;
+
 	override public function create()
 	{
 		var bg = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.GRAY);
@@ -12,15 +14,19 @@ class PlayState extends GameState
 
 		tiles = new LetterList();
 		add(tiles);
+		tiles.makeLetters({x: 10, y: 10}, 'hello');
 
-		tiles.makeLetters({x: 10, y: 200}, 'hello');
+		textBox = new Textbox({x: 10, y: FlxG.width * 0.6}, {width: FlxG.width - 20, height: FlxG.width * 0.3}, 'sup broski', 24);
+		textBox.typer.startTyping('hello hello hello hello hello hello hello', true);
+		add(textBox);
 
 		super.create();
 	}
 
 	override public function update(elapsed:Float) {
-		if (FlxG.keys.justPressed.R) switchState(new states.MainMenuState()); 
 		super.update(elapsed);
+
+		if (FlxG.keys.justPressed.R) switchState(new states.MainMenuState());
 	}
 }
 

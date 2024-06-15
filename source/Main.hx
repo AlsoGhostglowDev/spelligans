@@ -3,7 +3,7 @@ package;
 import flixel.FlxGame;
 import openfl.display.Sprite;
 
-//Thanks Sqirra-rng
+// Thanks Sqirra-rng
 #if SHOW_CRASHDUMP
 import openfl.events.UncaughtErrorEvent;
 import haxe.CallStack;
@@ -13,12 +13,12 @@ import sys.io.File;
 import sys.io.Process;
 import lime.app.Application;
 #end
+
 class Main extends Sprite
 {
 	public function new()
 	{
 		super();
-		GameState.skipTrans = true;
 		addChild(new FlxGame(0, 0, states.MainMenuState));
 		#if SHOW_CRASHDUMP
 		openfl.Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
@@ -46,7 +46,7 @@ class Main extends Sprite
 
 		Sys.println(errMsg);
 
-		Application.current.window.alert(errMsg, "Erm.");
+		Application.current.window.alert(errMsg, "Erm... what the sigma");
 		Sys.exit(1);
 	}
 	#end
