@@ -4,7 +4,7 @@ import flixel.FlxGame;
 import openfl.display.Sprite;
 
 // Thanks Sqirra-rng
-//#if SHOW_CRASHDUMP
+#if SHOW_CRASHDUMP
 import openfl.events.UncaughtErrorEvent;
 import haxe.CallStack;
 import haxe.io.Path;
@@ -18,7 +18,7 @@ import openfl.display.FPS;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.display.StageScaleMode;
-//#end
+#end
 
 using StringTools;
 class Main extends Sprite
@@ -28,12 +28,12 @@ class Main extends Sprite
 		super();
 		backend.Preferences.loadPrefs();
 		addChild(new FlxGame(0, 0, states.MainMenuState));
-		//#if SHOW_CRASHDUMP
+		#if SHOW_CRASHDUMP
 		openfl.Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
-		//#end
+		#end
 	}
 
-	//#if SHOW_CRASHDUMP
+	#if SHOW_CRASHDUMP
 	function onCrash(e:UncaughtErrorEvent):Void
 	{
 		var errMsg:String = "";
@@ -70,5 +70,5 @@ class Main extends Sprite
 		Application.current.window.alert(errMsg, "ERM");
 		Sys.exit(1);
 	}
-	//#end
+	#end
 }

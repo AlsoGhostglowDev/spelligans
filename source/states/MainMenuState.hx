@@ -103,7 +103,7 @@ class MainMenuState extends GameState {
 		} else if (FlxG.keys.pressed.SHIFT && FlxG.keys.justPressed.SLASH && canSelect){
 			canSelect = false;
 			var cppString = "";
-			#if cpp
+			#if !cpp
 			cppString = '\n\n(Your not on a windows platform. Online mode needs C++ to run its code, thus, Online mode cannot be enabled)';
 			#end
 			openSubState(new substates.Prompt('-Game was made on June 13th and completed on June 16th in the middle of the night.\n\n-Game uses music and sfx from Paper Mario: The Thousand Year Door.\n\n-Logo was meant to be a placeholder.\n\n-Game has words and letters that change consistantly. To enable this, turn on "Online mode" in Preferences.' + cppString + '\n\n-Press CTRL + R in Preferences to reset all data.\n\n-Game was made for the 2024 Summer Haxe Gamejam and was made by T-Ghost (T-Bar and Ghostglowdev).', OK, null, (answer) -> {

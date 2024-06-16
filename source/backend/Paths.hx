@@ -12,7 +12,7 @@ class Paths
 		#if sys
 		return sys.io.File.getContent('assets/data/$directory/$key.json');
 		#else
-		return sys.io.File.getContent('assets/data/$directory/$key.json');
+		return openfl.utils.Assets.getText('assets/data/$directory/$key.json');
 		#end
 	}
 	static public function music(key:String) return 'assets/music/$key' + musicSuffix;
