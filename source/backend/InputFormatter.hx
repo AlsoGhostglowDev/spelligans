@@ -27,6 +27,8 @@ class InputFormatter {
             case SLASH: '/' ; case BACKSLASH: '\\';
 
 			case SPACE: ' ';
+			
+			case ENTER: '';
 
 			case BACKSPACE | SHIFT | CAPSLOCK | TAB | CONTROL: '';
 			default:

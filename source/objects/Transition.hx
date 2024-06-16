@@ -19,7 +19,7 @@ class Transition extends flixel.group.FlxSpriteGroup {
         transGrad = FlxGradient.createGradientFlxSprite(Std.int(FlxG.width/3), 1, [0x0, 0xFF000000], 1, transOut ? 0 : 180);
         transGrad.scrollFactor.set();
         transGrad.scale.y = FlxG.height;
-        transGrad.antialiasing = Preferences.prefs.antialiasing;
+        transGrad.antialiasing = Preferences.prefs.antialiasingGlobal;
         transGrad.updateHitbox();
 
 		this.transOut = transOut;

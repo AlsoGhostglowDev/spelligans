@@ -7,7 +7,7 @@ class UIText extends FlxText
 		super(position.x, position.y, fieldWidth, text);
 
 		setFormat(Paths.font(Paths.fonts.ui), size, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
-		antialiasing = Preferences.prefs.antialiasing;
+		antialiasing = Preferences.prefs.antialiasingGlobal;
 		scrollFactor.set(0.3, 0.3);
 		borderSize = 2;
 	}

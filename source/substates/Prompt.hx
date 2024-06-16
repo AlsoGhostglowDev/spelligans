@@ -18,22 +18,43 @@ class Prompt extends GameSubState
 	public var extraData:Map<String, Dynamic> = new Map<String, Dynamic>();
 	public var answerData:Dynamic;
 	public var callback:(answer:Dynamic) -> Void;
+	public var timeUpCallback:() -> Void;
 	public var optionTexts:flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup<FlxText>;
-
+	public var timer:Float;
+	public var isTimed:Bool = false;
+	
+	var duperTimer:Float = 1;
     var canProceed:Bool = false;
+	
 
-	public function new(text:String, ?promptType:PromptType = YESNO, ?extraData:Map<String, Dynamic>, ?callback:(answer:Dynamic) -> Void)
+	public function new(text:String, ?promptType:PromptType = YESNO, ?extraData:Map<String, Dynamic>, ?callback:(answer:Dynamic) -> Void, ?timer:Float = 0, ?canLeave:Bool = true, ?isMute:Bool = false, ?timeUpCallback:() -> Void)
 	{
 		super();
-		prompt = new UIText({x: 0, y: 0}, 0, text, 34);
+		prompt = new UIText({x: 0, y: 0}, 0, text, if(promptType == OK) 17 else 34);
+		prompt.alignment = CENTER;
 		optionTexts = new flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup<FlxText>();
 		add(optionTexts);
 
 		this.promptType = promptType;
 		this.extraData = extraData;
 		this.callback = callback;
+		this.timeUpCallback = timeUpCallback;
+		this.mute = isMute;
+		this.canLeaveSubstate = (!canLeave);
+		
+		if(timer != 0)
+		{
+			this.timer = timer;
+			this.isTimed = true;
+		}
+		else {
+			this.isTimed = false;
+		}
+		
+		if(!mute) FlxG.sound.play(Paths.sound('menu/substate_notif_jingle'));
 	}
-
+	
+	var timerTxt:UIText;
 	override function create()
 	{
 		prompt.screenCenter();
@@ -42,8 +63,21 @@ class Prompt extends GameSubState
 
 		var pressEnter = new UIText({x: 0, y: 0}, 0, 'Press ENTER to confirm.', 20);
 		pressEnter.screenCenter();
-		pressEnter.y -= 145;
+		pressEnter.y = FlxG.height - prompt.height;
+		if(promptType == OK) {
+			pressEnter.x = FlxG.width - pressEnter.width;
+			pressEnter.y = FlxG.height - pressEnter.height;
+		}
 		add(pressEnter);
+		
+		if(isTimed)
+		{
+			timerTxt = new UIText({x: 0, y: 0}, 0, '', 25);
+			timerTxt.screenCenter();
+			timerTxt.y += 100;
+			timerTxt.text = "" + timer;
+			add(timerTxt);
+		}
 
 		switch (promptType)
 		{
@@ -61,10 +95,12 @@ class Prompt extends GameSubState
                 answerData = 'OK';
 		}
 
-		promptAnswer = new UIText({x: 0, y: 0}, 0, answerData, 24);
+		promptAnswer = new UIText({x: 0, y: 0}, FlxG.width, answerData, 24);
 
-		if (promptType != YESNO && promptType != OPTIONS)
+		if (promptType != YESNO && promptType != OPTIONS) {
+			promptAnswer.screenCenter(X);
 			add(promptAnswer);
+		}
 
 		new flixel.util.FlxTimer().start(0.5, (_) -> canProceed = true);
 	}
@@ -72,6 +108,21 @@ class Prompt extends GameSubState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		
+		if(isTimed)
+		{
+			duperTimer -= 0.015;
+			if (duperTimer <= 0)
+			{
+				timer--;
+				timerTxt.text = "" + timer;
+				duperTimer = 1;
+			}
+			if(timer <= 0) {
+				if (timeUpCallback != null) timeUpCallback();
+				close();
+			}
+		}
 
 		if (FlxG.keys.justPressed.ENTER && answerData != null)
 			proceed(answerData);
@@ -100,11 +151,9 @@ class Prompt extends GameSubState
 		if (promptType == INPUT) {
 			var key = cast(FlxG.keys.firstJustPressed(), flixel.input.keyboard.FlxKey);
 			if (key != NONE && canProceed) {
-				if (key != BACKSPACE)
-					answerData += InputFormatter.getKeyName(key, true);
-				else
-					answerData = answerData.substr(0, answerData.length-1);
-
+				if (key != BACKSPACE) answerData += InputFormatter.getKeyName(key, true);
+				else if(key == BACKSPACE && answerData.length > 0 && answerData != "") answerData = answerData.substr(0, answerData.length-1);
+				
 				promptAnswer.text = answerData;
 			}
 		}
@@ -121,7 +170,7 @@ class Prompt extends GameSubState
 			var text = new FlxText(0, 0, 0, string);
 			text.x = (((FlxG.width / (texts.length - 1)) * (i)) / 2) - (text.width / 2);
 
-			text.antialiasing = Preferences.prefs.antialiasing;
+			text.antialiasing = Preferences.prefs.antialiasingGlobal;
 			text.screenCenter(Y);
 			text.setFormat(Paths.font(Paths.fonts.ui), 24);
 			add(text);
@@ -136,6 +185,7 @@ class Prompt extends GameSubState
 		{
 			callback(answer);
 		}
+		if(isTimed) timerTxt = null;
 		close();
 	}
 }

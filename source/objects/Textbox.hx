@@ -11,9 +11,11 @@ class Textbox extends flixel.group.FlxGroup {
 
     public function new(?position:{x:Float, y:Float}, ?dimensions:{width:Float, height:Float}, ?Text:String = '', ?size:Int = 8) {
         super();
-
+		
+		if(dimensions == null) dimensions = {width: 240, height: 120};
+		
         box = new FlxSprite(position.x, position.y).makeGraphic(1, 1, FlxColor.WHITE);
-        boxDimensions = dimensions ?? {width: 240, height: 120};
+        boxDimensions = dimensions;
         add(box);
 
 		typer = new FlxTextTyper();
