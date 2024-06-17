@@ -1,7 +1,8 @@
 package backend;
 
-import haxe.Json;
+import tjson.TJSON;
 import haxe.format.JsonParser;
+
 #if sys 
 import sys.FileSystem;
 #else
@@ -17,9 +18,13 @@ class Word {
 	public static var wordJson:WordFile;
     public static function parseWords(filePath:String, directory:String) {
 		#if cpp
-		if(backend.Preferences.prefs.onlineMode) wordJson = cast Json.parse(OnlineData.getDifficultyFromOnline(filePath));
+		if (backend.Preferences.prefs.onlineMode) wordJson = cast TJSON.parse(OnlineData.getDifficultyFromOnline(filePath));
 		else
 		#end
-			wordJson = cast Json.parse(Paths.json(filePath, directory));
+
+		wordJson = cast TJSON.parse(Paths.json(filePath, directory));
+		
+		if (wordJson == null) 
+			wordJson.words = ['unavailable'];
 	}
 }

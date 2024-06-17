@@ -1,6 +1,7 @@
 package backend;
 
 using StringTools;
+
 class OnlineData
 {
 	static public function getDifficultyFromOnline(diff:String = "normal")
@@ -15,6 +16,7 @@ class OnlineData
 			case "impossible":
 				return getOnlineData("https://raw.githubusercontent.com/TBar09/spelligans-onlinedata/main/onlineData/impossible.json");
 		}
+		
 		return "";
 	}
 	
@@ -22,13 +24,8 @@ class OnlineData
 	{
 		var coolSwag = url.toString();
 		var http = new haxe.Http(coolSwag);
-		http.onData = function(data:String)
-		{
-			coolSwag = data;
-		}
-		http.onError = function (error) {
-			trace('Error: $error. Is the user offline?');
-		}
+		http.onData = (data:String) -> coolSwag = data;
+		http.onError = (error) -> trace('Error: $error. Is the user offline?');
 		http.request();
 		
 		return coolSwag;

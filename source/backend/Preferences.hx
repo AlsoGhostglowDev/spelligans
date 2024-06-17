@@ -11,7 +11,9 @@ package backend;
 	public var gameHighscore:Int = 0;
 
     public var keyBinds:Map<String, Array<flixel.input.keyboard.FlxKey>> = [
-        "exit" => [ESCAPE, ESCAPE]
+        "exit" => [ESCAPE],
+		"up"   => [W],
+		"down" => [S]
     ];
 }
 

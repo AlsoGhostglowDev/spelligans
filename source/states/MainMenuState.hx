@@ -86,10 +86,10 @@ class MainMenuState extends GameState {
 		
 		if (FlxG.keys.justPressed.A) {
 			//FlxG.sound.music.fadeOut(1, 0, (_) -> FlxG.sound.music = null);
-			if(!backend.Preferences.prefs.instructionsExplained) {
+			if(!Preferences.prefs.instructionsExplained) {
 				openSubState(new substates.Prompt('Instructions:\nWhen the timer hits 0, you will be given a random word/words.\nType the word/words when they appear to earn points.\n\nIf you fail to type the word or run out of time, points will be deducted.\nEarn as many points as you can before all of the rounds are done to get a highscore!\n\nHave Fun! 2024 Summer Haxejam!', OK, null, (answer) -> {
-					backend.Preferences.prefs.instructionsExplained = true;
-					backend.Preferences.savePrefs();
+					Preferences.prefs.instructionsExplained = true;
+					Preferences.savePrefs();
 					switchState(new states.PlayState());
 				}));
 			} else {

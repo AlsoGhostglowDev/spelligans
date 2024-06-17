@@ -1,5 +1,6 @@
 package states;
 
+import flixel.sound.FlxSound;
 import flixel.FlxState;
 import backend.Word;
 import flixel.FlxCamera;
@@ -17,6 +18,8 @@ class PlayState extends GameState
 	
 	var gameScore:Int = 0;
 	var gameMisses:Int = 0;
+
+	var difficulty = Preferences.prefs.difficulty;
 	
 	var curRound:Int = 0;
 	public static var gameRounds:Int = 20;
@@ -44,14 +47,20 @@ class PlayState extends GameState
 		bg.antialiasing = Preferences.prefs.antialiasingGlobal;
         add(bg);
 		
-		//so sorry for the long vars
-		if(backend.Preferences.prefs.difficulty != null) Word.parseWords(backend.Preferences.prefs.difficulty.toString().toLowerCase(), "word-mode");
+		if(difficulty != null) Word.parseWords(difficulty.toString().toLowerCase(), "word-mode");
 		else Word.parseWords("normal", "word-mode");
 		
-		infoTxt = new UIText({x: 0, y: 0}, 0, "", 24);
-		infoTxt.applyMarkup("Game Score: <score>" + gameScore + "<score>\nGame Misses: <miss>" + gameMisses + "<miss>", [
+		var col = [
+			"easy" => [0xFF00FF1A, 0xFF076C00],
+			"normal" => [0xFFFFFB00, 0xFF6C6A00],
+			"hard" => [0xFFFF0000, 0xFF6C0000],
+			"impossible" => [0xFFAE00FF, 0xFF350067]
+		];
+		infoTxt = new UIText({x: 15, y: 15}, 0, "", 24);
+		infoTxt.applyMarkup("Game Score: <score>" + gameScore + "<score>\nGame Misses: <miss>" + gameMisses + "<miss>\n\nDifficulty: <diff>" + difficulty.toUpperCase() + "<diff>", [
 			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFFEBB53D, false, false, 0xFFDA6A3D), "<score>"),
 			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFF404040, false, false, 0xFF0F0F0F), "<miss>"),
+			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(col[difficulty][0], false, false, col[difficulty][1]), "<diff>")
 		]);
 		add(infoTxt);
 		
@@ -72,61 +81,73 @@ class PlayState extends GameState
 	var coolSwag:FlxTimer;
 	function makeWordSection()
 	{
-		if (gameMisses >= 10)
-		{
+		if (gameMisses >= 10) {
 			gameIsRunning = false;
 			youLost();
 		}
-		if(gameIsRunning && gameMisses < 10)
+
+		if (gameIsRunning)
 		{
-			coolSwag = new flixel.util.FlxTimer().start(0.6, function(tmr:FlxTimer) {
+			coolSwag = new flixel.util.FlxTimer().start(0.2, (tmr:FlxTimer) -> {
 				if(coolSwag.loopsLeft == 0)
 				{
-					//FlxG.sound.music.volume = 1;
 					getReadyTxt.visible = false;
 					wordToType = Word.wordJson.words[FlxG.random.int(0, Word.wordJson.words.length-1)];
 					
 					FlxG.sound.playMusic(Paths.music('quiztime'), 1);
-					openSubState(new substates.Prompt('Type the word:\n' + wordToType, INPUT, null, (answer) -> {
-						if(answer.toLowerCase() != wordToType.toLowerCase())
-						{
-							missWord();
-							addScore(-100 * wordToType.length);
-							
-						} else {
-							correctWord();
-							addScore(100 * wordToType.length);
-						}
+					var time = (difficulty == 'impossible' ?
+						flixel.math.FlxMath.bound(wordToType.length * 1.25, 0, 20) : Std.int(wordToType.length * (difficulty == 'easy' ? 2 : 2.5))
+					);
+
+					openSubState(new substates.Prompt('Type the word:\n$wordToType', INPUT, null, (answer) -> {
+
+						final isCorrect = (answer.toLowerCase() == wordToType.toLowerCase());
+						(isCorrect ? correctWord : missWord)();
+						addScore((isCorrect ? 100 : -100) * wordToType.length);
+
 						curRound++;
 						coolSwag = null;
+
 						FlxG.sound.playMusic(Paths.music("rrr"), 0);
-						//FlxG.sound.music.volume = 0;
 						
 						if(curRound >= gameRounds) {
 							gameIsRunning = false;
 							endGame();
-						}
-						else if(gameIsRunning) makeWordSection();
+						} else if (gameIsRunning) 
+							makeWordSection();
 						
-					}, if(backend.Preferences.prefs.difficulty == "easy") Std.int(wordToType.length) else Std.int(wordToType.length / .5), false, () -> {
+					}, time, false, false, () -> {
 						missWord();
 						addScore(-100 * wordToType.length);
+
 						curRound++;
 						coolSwag = null;
+
 						FlxG.sound.playMusic(Paths.music("rrr"), 0);
-						//FlxG.sound.music.volume = 0;
-						if(curRound >= gameRounds) endGame();
-						else makeWordSection();
+
+						if(curRound >= gameRounds) endGame(); else makeWordSection();
 					}));
 				} else {
-					getReadyTxt.visible = true;
-					getReadyTxt.text = "GET READY...\n" + coolSwag.loopsLeft;
-					
-					FlxG.sound.play(Paths.sound('click'));
-					getReadyTxt.scale.set(getReadyTxt.scale.x + 0.1, getReadyTxt.scale.y + 0.1);		
-					flixel.tweens.FlxTween.tween(getReadyTxt.scale, {x: getReadyTxt.scale.x - 0.1, y: getReadyTxt.scale.y - 0.1}, 0.5, {ease: flixel.tweens.FlxEase.sineIn});
+					if (coolSwag.elapsedLoops > 10) {
+						getReadyTxt.visible = true;
+						getReadyTxt.text = "GO!";
+
+						if (coolSwag.elapsedLoops == 11) {
+							var sfx:flixel.sound.FlxSound = new FlxSound().loadEmbedded(ClickSfx);
+							sfx.pitch = 1.5;
+							add(sfx); sfx.play();
+						}
+					} else {
+						getReadyTxt.visible = !getReadyTxt.visible;
+						getReadyTxt.text = "READY?!";
+
+						if (coolSwag.elapsedLoops % 2 != 0)
+							FlxG.sound.play(Paths.sound('click'), 0.7);
+					}
+
+					getReadyTxt.screenCenter();
 				}
-			}, 4);
+			}, 13);
 		}
 	}
 	
@@ -150,9 +171,16 @@ class PlayState extends GameState
 	
 	function addScore(scoreToAdd:Int) {
 		gameScore += scoreToAdd;
-		infoTxt.applyMarkup("Game Score: <score>" + gameScore + "<score>\nGame Misses: <miss>" + gameMisses + "<miss>", [
+		var col = [
+			"easy" => [0xFF00FF1A, 0xFF076C00],
+			"normal" => [0xFFFFFB00, 0xFF6C6A00],
+			"hard" => [0xFFFF0000, 0xFF6C0000],
+			"impossible" => [0xFFAE00FF, 0xFF350067]
+		];
+		infoTxt.applyMarkup("Game Score: <score>" + gameScore + "<score>\nGame Misses: <miss>" + gameMisses + "<miss>\n\nDifficulty: <diff>" + difficulty.toUpperCase() + "<diff>", [
 			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFFEBB53D, false, false, 0xFFDA6A3D), "<score>"),
 			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFF404040, false, false, 0xFF0F0F0F), "<miss>"),
+			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(col[difficulty][0], false, false, col[difficulty][1]), "<diff>")
 		]);
 	}
 	
@@ -190,3 +218,6 @@ class PlayState extends GameState
 		super.update(elapsed);
 	}
 }
+
+@:sound("assets/sounds/click.ogg")
+private class ClickSfx extends openfl.media.Sound {}

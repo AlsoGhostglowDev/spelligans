@@ -1,113 +1,111 @@
 package states;
 
-import flixel.input.keyboard.FlxKey;
-import backend.Preferences;
+import flixel.group.FlxSpriteGroup;
+import backend.Preferences.PreferenceVars;
 
-using StringTools;
 class PreferenceState extends GameState {
-	var currentVarTxt:UIText;
-    override function create() {
-		var bg = new flixel.addons.display.FlxBackdrop(Paths.image('cheese'), XY);
-        bg.velocity.set(100, 100);
-        add(bg);
+    public static var instance:PreferenceState;
+	public var grpOptions:flixel.group.FlxSpriteGroup;
+    public var curSelected:Int = 0;
 
-        var grad = flixel.util.FlxGradient.createGradientFlxSprite(1, Std.int(FlxG.height / 3), [0x0, 0xFFFFB93F]);
-        grad.setPosition(0, (FlxG.width/3) + 50);
-        grad.scrollFactor.set();
-        grad.scale.set(FlxG.width, 1);
-        grad.updateHitbox();
-        add(grad);
-		
-		var infoTxt = new UIText({x: 10, y: 0}, 0, "", 13);
-		infoTxt.applyMarkup("Press <TBar>ONE [1]<TBar> to change the difficulty.\nPress <Ghost>TWO [2]<Ghost> to change the antialiasing.\nPress <TBar>THREE [3]<TBar> to change the game rounds." #if cpp + "\nPress <Ghost>FOUR [4]<Ghost> to change Online Mode." #end, [
-			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFF00487C, false, false, 0xFF002B49), "<TBar>"),
-			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFF09BF91, false, false, 0xFF068966), "<Ghost>")
-		]);
-		add(infoTxt);
-		
-		currentVarTxt = new UIText({x: 10, y: 0}, 0, "", 13);
-		currentVarTxt.applyMarkup("Difficulty: <TBar>" + Preferences.prefs.difficulty.toUpperCase() + "<TBar>\n\nAntialiasing: <Ghost>" + Preferences.prefs.antialiasingGlobal + "<Ghost>\n\nGame Rounds: <TBar>" + Preferences.prefs.gameRounds + "<TBar>" #if cpp + "\n\nOnline Mode: <Ghost>" + Preferences.prefs.onlineMode + "<Ghost>" #end, [
-			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFF00487C, false, false, 0xFF002B49), "<TBar>"),
-			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFF09BF91, false, false, 0xFF068966), "<Ghost>")
-		]);
-		currentVarTxt.screenCenter();
-		add(currentVarTxt);
-	
+    var clientPrefs = Preferences.prefs;
+
+	var bg:flixel.addons.display.FlxBackdrop;
+    override function create() {
+		instance = this;
+
+		bg = new flixel.addons.display.FlxBackdrop(Paths.image('cheese'), XY);
+		bg.velocity.set(100, 100);
+		bg.antialiasing = Preferences.prefs.antialiasingGlobal;
+		add(bg);
+
+		grpOptions = new FlxSpriteGroup();
+        add(grpOptions);
+
+        var option = new OptionText(0, 'Difficulty', OPTIONS, clientPrefs.difficulty, ['options' => ('easy/normal/hard/impossible').split('/')]);
+        grpOptions.add(option);
+		var option = new OptionText(1, 'Game Rounds', OPTIONS, clientPrefs.framerate, ['options' => ('20/50/80/100/200').split('/')], 'Int');
+		grpOptions.add(option);
+		var option = new OptionText(2, 'Antialiasing', YESNO, clientPrefs.antialiasingGlobal);
+		grpOptions.add(option);
+
         super.create();
     }
 
     override function update(elapsed:Float) {
-        super.update(elapsed);
-		
-		//For the love of god we need to optimize this
-		if (subState == null) {
-			if (FlxG.keys.justPressed.ONE) {
-				openSubState(new substates.Prompt('What is the new difficulty?', OPTIONS, ["options" => ('easy normal hard impossible').split(' ')], (answer) ->
-				{
-					Preferences.prefs.difficulty = answer.toLowerCase();
-					updateText();
-				}));
-			}
-			else if (FlxG.keys.justPressed.TWO) {
-				openSubState(new substates.Prompt('Do you want to toggle antialiasing?', YESNO, null, (answer) ->
-				{
-					if(answer.toUpperCase() == "YES") Preferences.prefs.antialiasingGlobal = (!Preferences.prefs.antialiasingGlobal);
-					
-					updateText();
-				}));
-			}
-			else if (FlxG.keys.justPressed.THREE) {
-				openSubState(new substates.Prompt('How many rounds are in each game?', OPTIONS, ["options" => ('20 50 80 100 150 200').split(' ')], (answer) ->
-				{
-					switch(answer) {
-						case "20":
-							Preferences.prefs.gameRounds = 20;
-						case "50":
-							Preferences.prefs.gameRounds = 50;
-						case "80":
-							Preferences.prefs.gameRounds = 80;
-						case "100":
-							Preferences.prefs.gameRounds = 100;
-						case "150":
-							Preferences.prefs.gameRounds = 150;
-						case "200":
-							Preferences.prefs.gameRounds = 200;
-					}					
-					updateText();
-				}));
-			}
-			#if cpp
-			else if (FlxG.keys.justPressed.FOUR) {
-				openSubState(new substates.Prompt('Do you want to toggle Online mode?', YESNO, null, (answer) ->
-				{
-					if(answer.toUpperCase() == "YES") Preferences.prefs.onlineMode = (!Preferences.prefs.onlineMode);
-					updateText();
-				}));
-			}
-			#end
-			else if (FlxG.keys.pressed.R && FlxG.keys.pressed.CONTROL) {
-				openSubState(new substates.Prompt('Are you sure you want to reset the Preferences?', YESNO, null, (answer) ->
-				{
-					if(answer.toUpperCase() == "YES") Preferences.resetPrefs();
-					updateText();
-				}));
-			}
-			else if (FlxG.keys.pressed.ESCAPE) {
-				//FlxG.sound.music.fadeOut(1, 0, (_) -> FlxG.sound.music = null);
-				switchState(new states.MainMenuState());
-			}
-		}
+        if (FlxG.keys.anyJustPressed(clientPrefs.keyBinds.get('exit')))
+            switchState(new states.MainMenuState());
+
+        if (FlxG.keys.justPressed.UP)
+            curSelected--;
+
+		if (FlxG.keys.justPressed.DOWN) 
+			curSelected++;
+
+        if (curSelected < 0) curSelected = grpOptions.length-1;
+		if (curSelected > grpOptions.length-1) curSelected = 0;
+
+		super.update(elapsed);
     }
-	
-	override function destroy() {
-		Preferences.savePrefs();
-	}
-	
-	function updateText()
-	{
-		currentVarTxt.applyMarkup("Difficulty: <TBar>" + Preferences.prefs.difficulty.toUpperCase() + "<TBar>\n\nAntialiasing: <Ghost>" + Preferences.prefs.antialiasingGlobal + "<Ghost>\n\nGame Rounds: <TBar>" + Preferences.prefs.gameRounds + "<TBar>" #if cpp + "\n\nOnline Mode: <Ghost>" + Preferences.prefs.onlineMode + "<Ghost>" #end, [
-			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFF00487C, false, false, 0xFF002B49), "<TBar>"),
-			new flixel.text.FlxTextFormatMarkerPair(new FlxTextFormat(0xFF09BF91, false, false, 0xFF068966), "<Ghost>")
-		]);
-	}
+
+    function updateObjects() {
+        if (bg.antialiasing != clientPrefs.antialiasingGlobal)
+			bg.antialiasing = clientPrefs.antialiasingGlobal;
+
+        if (FlxG.drawFramerate != clientPrefs.framerate)
+            FlxG.drawFramerate = clientPrefs.framerate;
+    }
+}
+
+class OptionText extends UIText {
+    public var _text:String;
+    public var type:substates.Prompt.PromptType;
+    public var extraData:Map<String, Dynamic> = new Map<String, Dynamic>();
+	public var castType:String;
+	public var prefVar:Dynamic;
+    public var iteration:Int;
+
+	public function new(iteration:Int, text:String, type:substates.Prompt.PromptType, pref:Dynamic, ?extraData:Map<String, Dynamic>, ?castType:String = 'String') {
+        super({x: 40, y: 50 + (26 * PreferenceState.instance.grpOptions.length)}, 0, text, 22);
+
+        _text = text;
+        prefVar = pref;
+        this.type = type;
+        this.iteration = iteration;
+        this.extraData = extraData;
+		this.castType = castType;
+    }
+
+    override function update(elapsed:Float) {
+		text = _text + ' : [' + Std.string(prefVar) + ']';
+
+		var isSelected = iteration == PreferenceState.instance.curSelected;
+
+        if (FlxG.keys.justPressed.ENTER && isSelected) {
+            if (PreferenceState.instance.subState == null) {
+                PreferenceState.instance.openSubState(new substates.Prompt('Setting a new value for $_text:', type, extraData, (answer:Dynamic) -> {
+                    if (type == YESNO) {
+                        prefVar = (answer == 'YES');
+                        return;
+                    }
+
+					if (castType == null)
+                        prefVar = answer;
+                    else {
+                        prefVar = switch(castType) {
+							case 'Int': if (answer is String) Std.parseInt(answer); else Std.int(answer);
+							default: Std.string(answer);
+                        }
+                    } 
+						
+
+                    Preferences.savePrefs();
+                }));
+            }
+        }
+
+        color = (isSelected ? 0xFF00FFF7 : FlxColor.WHITE);
+
+		super.update(elapsed);
+    }
 }

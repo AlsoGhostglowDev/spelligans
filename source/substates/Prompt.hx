@@ -95,14 +95,14 @@ class Prompt extends GameSubState
                 answerData = 'OK';
 		}
 
-		promptAnswer = new UIText({x: 0, y: 0}, FlxG.width, answerData, 24);
+		promptAnswer = new UIText({x: 0, y: 0}, FlxG.width * 0.8, answerData, 24);
 
 		if (promptType != YESNO && promptType != OPTIONS) {
-			promptAnswer.screenCenter(X);
 			add(promptAnswer);
+			promptAnswer.alignment = CENTER;
 		}
 
-		new flixel.util.FlxTimer().start(0.5, (_) -> canProceed = true);
+		new flixel.util.FlxTimer().start(0.1, (_) -> canProceed = true);
 	}
 
 	override function update(elapsed:Float)
@@ -111,20 +111,16 @@ class Prompt extends GameSubState
 		
 		if(isTimed)
 		{
-			duperTimer -= 0.015;
-			if (duperTimer <= 0)
-			{
-				timer--;
-				timerTxt.text = "" + timer;
-				duperTimer = 1;
-			}
+			timer -= elapsed;
+			timerTxt.text = '${floorDecimal(timer, 1)}'; // showing the decimals makes the situation more intense
+
 			if(timer <= 0) {
 				if (timeUpCallback != null) timeUpCallback();
 				close();
 			}
 		}
 
-		if (FlxG.keys.justPressed.ENTER && answerData != null)
+		if (FlxG.keys.justPressed.ENTER && answerData != null && canProceed)
 			proceed(answerData);
 
 		for (text in optionTexts)
@@ -159,6 +155,7 @@ class Prompt extends GameSubState
 		}
 
 		promptAnswer.screenCenter();
+		if (timerTxt != null) timerTxt.screenCenter(X);
 	}
 
 	public function createOptTexts(texts:Array<String>)
@@ -168,7 +165,11 @@ class Prompt extends GameSubState
 		{
 			i++;
 			var text = new FlxText(0, 0, 0, string);
-			text.x = (((FlxG.width / (texts.length - 1)) * (i)) / 2) - (text.width / 2);
+			text.x = (FlxG.width / (texts.length+2)) * i;
+
+			if (texts.length == 2) {
+				text.x = (i == 1 ? FlxG.width * 0.25 : FlxG.width * 0.75);
+			}
 
 			text.antialiasing = Preferences.prefs.antialiasingGlobal;
 			text.screenCenter(Y);
@@ -185,7 +186,21 @@ class Prompt extends GameSubState
 		{
 			callback(answer);
 		}
-		if(isTimed) timerTxt = null;
+
+		if(isTimed) timerTxt.kill();
 		close();
+	}
+
+	function floorDecimal(value:Float, decimals:Int):Float
+	{
+		if (decimals < 1)
+			return Math.floor(value);
+
+		var tempMult:Float = 1;
+		for (i in 0...decimals)
+			tempMult *= 10;
+
+		var newValue:Float = Math.floor(value * tempMult);
+		return newValue / tempMult;
 	}
 }

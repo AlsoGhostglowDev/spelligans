@@ -12,13 +12,13 @@ class LetterTile extends flixel.group.FlxSpriteGroup
 		tile = new FlxSprite(x, y, Paths.image('letter_tile'));
 		tile.scale.set(0.5, 0.5);
 		tile.updateHitbox();
-		tile.antialiasing = Preferences.prefs.antialiasing;
+		tile.antialiasing = Preferences.prefs.antialiasingGlobal;
 		tile.color = color;
 
 		letter = new FlxText(0, 0, 128, daLetter);
 		letter.setFormat(Paths.font(Paths.fonts.game), 54, FlxColor.WHITE, CENTER, OUTLINE, 0xFF000737);
 		letter.borderSize = 4;
-		letter.antialiasing = Preferences.prefs.antialiasing;
+		letter.antialiasing = Preferences.prefs.antialiasingGlobal;
 
 		add(tile);
 		add(letter);
