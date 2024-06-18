@@ -1,6 +1,6 @@
 package states;
 
-import flixel.sound.FlxSound;
+import flixel.system.FlxSound;
 import flixel.FlxState;
 import backend.Word;
 import flixel.FlxCamera;
@@ -133,7 +133,7 @@ class PlayState extends GameState
 						getReadyTxt.text = "GO!";
 
 						if (coolSwag.elapsedLoops == 11) {
-							var sfx:flixel.sound.FlxSound = new FlxSound().loadEmbedded(ClickSfx);
+							var sfx:flixel.system.FlxSound = new FlxSound().loadEmbedded(ClickSfx);
 							sfx.pitch = 1.5;
 							add(sfx); sfx.play();
 						}
